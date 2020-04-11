@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const expect = require('chai').expect;
 const server = require('./mockServer');
-
+const _ = require('underscore');
 const httpHandler = require('../js/httpHandler');
 
 
@@ -16,14 +16,25 @@ describe('server responses', () => {
     httpHandler.router(req, res);
     expect(res._responseCode).to.equal(200);
     expect(res._ended).to.equal(true);
-    expect(res._data.toString()).to.be.empty;
+    expect(res._data.toString()).to.equal('GET');
 
     done();
   });
 
   it('should respond to a GET request for a swim command', (done) => {
-    // write your test here
+    let {req, res} = server.mock('/', 'GET');
+    httpHandler.router(req, res);
+
+    //Declare an array of potential responses - 'up, down, left, right'
+    let directions = ['up', 'down', 'left', 'right'];
+
+    expect(res._responseCode).to.equal(200);
+    expect(res._ended).to.equal(true);
+    expect(_.contains(directions, res._data.toString())).to.equal(true);
     done();
+
+    //Expect the response to be an item within our potential responses
+    //expect(array.contains(res_.data.toString())).to.equal(true);
   });
 
   xit('should respond with 404 to a GET request for a missing background image', (done) => {
