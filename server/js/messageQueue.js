@@ -1,18 +1,15 @@
-const messages = []; // the storage unit for messages
+let Messages = function() {
+  this.messages = [];
+}
 
-module.exports.enqueue = (message) => {
-  console.log(`Enqueing message: ${message}`);
-  messages.push(message);
-};
+Messages.prototype.enqueue = function(message) {
+  // console.log(`Enqueing message: ${message}`);
+  this.messages.push(message);
+  // console.log(this.messages);
+}
 
-module.exports.dequeue = () => {
-  // returns undefined if messages array is empty
-  return messages.shift();
-};
+Messages.prototype.dequeue = function() {
+  return this.messages.shift();
+}
 
-// module.exports.messages = function() {
-//   this.messages = [];
-// }
-
-// module.exports.messages.prototype.enqueue = function(message) {};
-// module.exports.messages.prototype.dequeue = function() {};
+module.exports = Messages;

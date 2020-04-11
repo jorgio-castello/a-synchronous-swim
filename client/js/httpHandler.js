@@ -22,7 +22,7 @@
     });
   };
 
-  // setInterval(swimFetch, 500);
+  setInterval(swimFetch, 250);
 
   /////////////////////////////////////////////////////////////////////
   // The ajax file uplaoder is provided for your convenience!

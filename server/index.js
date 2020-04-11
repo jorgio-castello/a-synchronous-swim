@@ -1,12 +1,12 @@
-//Import the messageQueue
+const MessagesClass = require('./js/messageQueue.js');
+let userCommands = new MessagesClass();
 
 
 const keypressHandler = require('./js/keypressHandler');
-keypressHandler.initialize(message => console.log(`Message received: ${message}`)); //Change it to enqueue into our messages array
-//Initialize our http messageQueue, we assign it the messages array
+keypressHandler.initialize(message => userCommands.enqueue.call(userCommands, message));
 
 const httpHandler = require('./js/httpHandler');
-httpHandler.initialize(messages);
+httpHandler.initialize(userCommands); //pass our class to the initialize
 
 
 const http = require('http');
