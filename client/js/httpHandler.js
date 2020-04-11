@@ -6,6 +6,24 @@
   // TODO: build the swim command fetcher here
   //
 
+  //Invoke setInterval on the swimFetch, we would pass a callback - we should pass console.log - afterwards we'll pass the SwimTeam.move
+
+  //Define our swim fetch function with inner ajax function - the function will accept a callback
+  let swimFetch = (callback) => {
+    $.ajax({
+      type: 'GET',
+      url: serverUrl,
+      success: data => {
+        SwimTeam.move(data);
+      },
+      error: error => {
+        console.log(error);
+      }
+    });
+  };
+
+  // setInterval(swimFetch, 500);
+
   /////////////////////////////////////////////////////////////////////
   // The ajax file uplaoder is provided for your convenience!
   // Note: remember to fix the URL below.

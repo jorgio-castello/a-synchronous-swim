@@ -9,3 +9,10 @@ module.exports.dequeue = () => {
   // returns undefined if messages array is empty
   return messages.shift();
 };
+
+// module.exports.messages = function() {
+//   this.messages = [];
+// }
+
+// module.exports.messages.prototype.enqueue = function(message) {};
+// module.exports.messages.prototype.dequeue = function() {};
