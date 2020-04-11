@@ -1,10 +1,10 @@
-
 const fs = require('fs');
 const path = require('path');
 const expect = require('chai').expect;
 const server = require('./mockServer');
 const _ = require('underscore');
 const httpHandler = require('../js/httpHandler');
+const MessageClass = require('../js/messageQueue');
 
 
 
@@ -22,24 +22,26 @@ describe('server responses', () => {
   });
 
   it('should respond to a GET request for a swim command', (done) => {
+    //Import our messages object
+    let userCommands = new MessageClass();
+    //Put in a command - 'left'
+    userCommands.enqueue('left');
+    //http.initialize(messagesObj);
+    httpHandler.initialize(userCommands);
+
     let {req, res} = server.mock('/', 'GET');
     httpHandler.router(req, res);
 
-    //Declare an array of potential responses - 'up, down, left, right'
-    let directions = ['up', 'down', 'left', 'right'];
-
     expect(res._responseCode).to.equal(200);
     expect(res._ended).to.equal(true);
-    expect(_.contains(directions, res._data.toString())).to.equal(true);
+    expect(res._data.toString()).to.equal('left');
     done();
 
-    //Expect the response to be an item within our potential responses
-    //expect(array.contains(res_.data.toString())).to.equal(true);
   });
 
-  xit('should respond with 404 to a GET request for a missing background image', (done) => {
+  it('should respond with 404 to a GET request for a missing background image', (done) => {
     httpHandler.backgroundImageFile = path.join('.', 'spec', 'missing.jpg');
-    let {req, res} = server.mock('FILL_ME_IN', 'GET');
+    let {req, res} = server.mock('/background', 'GET');
 
     httpHandler.router(req, res, () => {
       expect(res._responseCode).to.equal(404);
@@ -48,17 +50,25 @@ describe('server responses', () => {
     });
   });
 
-  xit('should respond with 200 to a GET request for a present background image', (done) => {
-    // write your test here
+  it('should respond with 200 to a GET request for a present background image', (done) => {
+    httpHandler.backgroundImageFile = path.join('.', 'spec', 'water-lg.jpg');
+    let {req, res} = server.mock('/background', 'GET');
+
+    httpHandler.router(req, res, () => {
+      expect(res._responseCode).to.equal(200);
+      expect(res._ended).to.equal(true);
+      done();
+    });
+
     done();
   });
 
   var postTestFile = path.join('.', 'spec', 'water-lg.jpg');
 
-  xit('should respond to a POST request to save a background image', (done) => {
+  it('should respond to a POST request to save a background image', (done) => {
     fs.readFile(postTestFile, (err, fileData) => {
       httpHandler.backgroundImageFile = path.join('.', 'spec', 'temp.jpg');
-      let {req, res} = server.mock('FILL_ME_IN', 'POST', fileData);
+      let {req, res} = server.mock('/uploadImage', 'POST', fileData);
 
       httpHandler.router(req, res, () => {
         expect(res._responseCode).to.equal(201);
@@ -68,13 +78,13 @@ describe('server responses', () => {
     });
   });
 
-  xit('should send back the previously saved image', (done) => {
+  it('should send back the previously saved image', (done) => {
     fs.readFile(postTestFile, (err, fileData) => {
       httpHandler.backgroundImageFile = path.join('.', 'spec', 'temp.jpg');
-      let post = server.mock('FILL_ME_IN', 'POST', fileData);
+      let post = server.mock('/uploadImage', 'POST', fileData);
 
       httpHandler.router(post.req, post.res, () => {
-        let get = server.mock('FILL_ME_IN', 'GET');
+        let get = server.mock('/background', 'GET');
         httpHandler.router(get.req, get.res, () => {
           expect(Buffer.compare(fileData, get.res._data)).to.equal(0);
           done();
