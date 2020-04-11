@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const headers = require('./cors');
 const multipart = require('./multipartUtils');
+// const formidable = require('formidable');
 
 // Path for the background image ///////////////////////
 module.exports.backgroundImageFile = path.join('.', 'background.jpg'); //./background.jpg
@@ -20,36 +21,50 @@ module.exports.router = (req, res, next = ()=>{}) => {
     res.end(messageQueue.dequeue());
   }
 
-  if (req.method === 'GET' && req.url === '/background'){ //./background.jpg - look up in the file system
+  if (req.method === 'GET' && req.url === '/background.jpg'){ //./background.jpg - look up in the file system
+    fs.readFile(module.exports.backgroundImageFile, (err, fileData) => {
+      if(err) {
+        res.writeHead(404, headers);
+      }
 
-    if(!fs.existsSync(module.exports.backgroundImageFile)) {
-      res.writeHead(404, headers);
       res.end();
-    } else {
-      // res.writeHead(200, headers);
-      // // Create/upload image?
-      // let image = fs.readFileSync(module.exports.backgroundImageFile);
-      res.writeHead(200, 'image/jpg');
-      let data = fs.readFile(module.exports.backgroundImageFile, (err, data) => {
-        return data;
-      });
-      console.log(data);
-      res.end(data);
-    }
-
-
+      next();
+    });
+    // if(!fs.existsSync(module.exports.backgroundImageFile)) {
+    //   res.writeHead(404, headers);
+    //   res.end();
+    //   next();
+    // } else {
+    //   console.log(module.exports.backgroundImageFile);
+    //   fs.readFile(module.exports.backgroundImageFile, (err, fileData) => {
+    //     res.writeHead(200, {
+    //       'Content-Type': 'image/jpeg',
+    //       'Content-Length': fileData.length
+    //     });
+    //     res.write(fileData, 'binary');
+    //   });
+    //   res.end();
+    //   next();
+    // }
   }
 
   if(req.method === 'POST' && req.url === '/uploadImage') {
-    //Step 1: Save data into our server somehow
-    let data = req._postData;
-    fs.writeFile(module.exports.backgroundImageFile, data, (err, data) => {
-      if(err) throw err;
+    //Declare data and set it equal to buffer
+    let imageData = Buffer.alloc(0);
+    //We need concat each chunk to the data
+    req.on('data', chunk => {
+      imageData = Buffer.concat([imageData, chunk]);
     });
 
-    console.log(data);
-    res.writeHead(201, headers);
-    res.end();
+    //Handle when the data finishes arriving
+    req.on('end', () => {
+      let file = multipart.getFile(imageData);
+      fs.writeFile(module.exports.backgroundImageFile, file.data, err => {
+        res.writeHead(201, headers);
+        res.end();
+        next();
+      });
+    });
   }
 
   if(req.method === 'OPTIONS') {
