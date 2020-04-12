@@ -5,6 +5,7 @@ const server = require('./mockServer');
 const _ = require('underscore');
 const httpHandler = require('../js/httpHandler');
 const MessageClass = require('../js/messageQueue');
+const multipart = require('../js/multipartUtils');
 
 
 
@@ -64,7 +65,7 @@ describe('server responses', () => {
     done();
   });
 
-  var postTestFile = path.join('.', 'spec', 'water-lg.jpg');
+  var postTestFile = path.join('.', 'spec', 'water-lg.multipart');
 
   it('should respond to a POST request to save a background image', (done) => {
     fs.readFile(postTestFile, (err, fileData) => {
@@ -87,7 +88,8 @@ describe('server responses', () => {
       httpHandler.router(post.req, post.res, () => {
         let get = server.mock('/background.jpg', 'GET');
         httpHandler.router(get.req, get.res, () => {
-          expect(Buffer.compare(fileData, get.res._data)).to.equal(0);
+          let file = multipart.getFile(fileData);
+          expect(Buffer.compare(file.data, get.res._data)).to.equal(0);
           done();
         });
       });

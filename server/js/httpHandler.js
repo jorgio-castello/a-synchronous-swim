@@ -30,7 +30,10 @@ module.exports.router = (req, res, next = () => {}) => {
         if(err) {
           res.writeHead(404, headers);
         } else {
-          res.writeHead(200, headers);
+          res.writeHead(200, {
+            'Content-Type': 'image/jpeg',
+            'Content-Length': fileData.length
+          });
           res.write(fileData, 'binary');
         }
         res.end();
@@ -46,8 +49,9 @@ module.exports.router = (req, res, next = () => {}) => {
     });
 
     req.on('end', () => {
-      fs.writeFile(module.exports.backgroundImageFile, imageData, err => {
-        res.writeHead(201, headers);
+      let file = multipart.getFile(imageData);
+      fs.writeFile(module.exports.backgroundImageFile, file.data, err => {
+        res.writeHead(err ? 400 : 201, headers);
         res.end();
         next();
       });
